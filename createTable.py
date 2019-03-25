@@ -23,7 +23,7 @@ table = dynamodb.create_table(
         },
         {
             'AttributeName': 'publications',
-            'AttributeType': 'S'
+            'AttributeType': 'M'
         },
     ],
     ProvisionedThroughput={

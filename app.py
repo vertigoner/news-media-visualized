@@ -1,21 +1,62 @@
 from flask import Flask
 from flask_restful import Api, Resource, reqparse
+import boto3
 
 import config
 
-print(config.news_api_key)
+# Get the service resource.
+dynamodb = boto3.resource('dynamodb',aws_access_key_id=config.aws_access_key_id, aws_secret_access_key=config.aws_secret_access_key, region_name='us-east-2')
 
+# Create the DynamoDB table.
+try:
+    table = dynamodb.create_table(
+        TableName='sourceDistribution',
+        KeySchema=[
+            {
+                'AttributeName': 'keyword',
+                'KeyType': 'HASH'
+            },
+            {
+                'AttributeName': 'publications',
+                'KeyType': 'RANGE'
+            }
+        ],
+        AttributeDefinitions=[
+            {
+                'AttributeName': 'keyword',
+                'AttributeType': 'S'
+            },
+            {
+                'AttributeName': 'publications',
+                'AttributeType': 'S'
+            },
+        ],
+        ProvisionedThroughput={
+            'ReadCapacityUnits': 5,
+            'WriteCapacityUnits': 5
+        }
+    )
+except dynamodb_client.exceptions.ResourceInUseException:
+    pass
+
+# Wait until the table exists.
+table.meta.client.get_waiter('table_exists').wait(TableName='sourceDistribution')
+
+# Print out some data about the table.
+print(table.item_count)
+
+# Flask framework
 app = Flask(__name__)
 api = Api(app)
 
 keywords = [
     {
         "name": "Russia",
-        "publications": [
+        "publications": {
             "The New York Times", 3,
             "CNN", 6,
             "Fox News", 1
-        ]
+        }
     },
     {
         "name": "wall",
@@ -27,6 +68,9 @@ keywords = [
     }
 ]
 
+for k in keywords:
+    json
+
 class Keyword(Resource):
     def get(self, name):
         for k in keywords:
@@ -34,7 +78,12 @@ class Keyword(Resource):
                 return k, 200
         return "Keyword not found", 404 # TODO: search for and store results from new keyword if queried
 
-
+# DynamoDB insertion
+def insertJSON(tablename, json):
+	table = dynamodb.Table(tablename)
+	table.put_item(
+	   Item=json
+	)
 
 # users = [
 #     {
@@ -106,7 +155,6 @@ class Keyword(Resource):
       
 
 
-      
 api.add_resource(Keyword, "/keyword/<string:name>")
 
 app.run(debug=True)
