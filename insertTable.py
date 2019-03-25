@@ -1,9 +1,14 @@
 import boto3
+from scrape import read
 
-dynamodb = boto3.resource('dynamodb',aws_access_key_id='AKIAJZ6F6DJHN7MYYPJQ', aws_secret_access_key='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', region_name='us-east-2')
+boto3.resource('dynamodb',aws_access_key_id=config.aws_access_key_id, aws_secret_access_key=config.aws_secret_access_key, region_name=config.region_name)
 
 def insertJSON(tablename, json):
 	table = dynamodb.Table(tablename)
 	table.put_item(
-	   Item={json}
+	   Item=json
 	)
+
+json = read()
+print(json)
+insertJSON("sourceDistribution", json)
