@@ -1,6 +1,10 @@
 from flask import Flask
 from flask_restful import Api, Resource, reqparse
 
+import config
+
+print(config.news_api_key)
+
 app = Flask(__name__)
 api = Api(app)
 
