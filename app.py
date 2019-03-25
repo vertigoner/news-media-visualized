@@ -8,74 +8,105 @@ print(config.news_api_key)
 app = Flask(__name__)
 api = Api(app)
 
-users = [
+keywords = [
     {
-        "name": "Nicholas",
-        "age": 42,
-        "occupation": "Network Engineer"
+        "name": "Russia",
+        "publications": [
+            "The New York Times", 3,
+            "CNN", 6,
+            "Fox News", 1
+        ]
     },
     {
-        "name": "Elvin",
-        "age": 32,
-        "occupation": "Doctor"
-    },
-    {
-        "name": "Jass",
-        "age": 22,
-        "occupation": "Web Developer"
+        "name": "wall",
+        "publications": {
+            "The New York Times", 3,
+            "CNN", 2,
+            "Fox News", 5
+        }
     }
 ]
 
-class User(Resource):
+class Keyword(Resource):
     def get(self, name):
-        for user in users:
-            if(name == user["name"]):
-                return user, 200
-        return "User not found", 404
+        for k in keywords:
+            if (name == k["name"]):
+                return k, 200
+        return "Keyword not found", 404 # TODO: search for and store results from new keyword if queried
 
-    def post(self, name):
-        parser = reqparse.RequestParser()
-        parser.add_argument("age")
-        parser.add_argument("occupation")
-        args = parser.parse_args()
 
-        for user in users:
-            if(name == user["name"]):
-                return "User with name {} already exists".format(name), 400
 
-        user = {
-            "name": name,
-            "age": args["age"],
-            "occupation": args["occupation"]
-        }
-        users.append(user)
-        return user, 201
+# users = [
+#     {
+#         "name": "Nicholas",
+#         "age": 42,
+#         "occupation": "Network Engineer"
+#     },
+#     {
+#         "name": "Elvin",
+#         "age": 32,
+#         "occupation": "Doctor"
+#     },
+#     {
+#         "name": "Jass",
+#         "age": 22,
+#         "occupation": "Web Developer"
+#     }
+# ]
 
-    def put(self, name):
-        parser = reqparse.RequestParser()
-        parser.add_argument("age")
-        parser.add_argument("occupation")
-        args = parser.parse_args()
+# class User(Resource):
+#     def get(self, name):
+#         for user in users:
+#             if(name == user["name"]):
+#                 return user, 200
+#         return "User not found", 404
 
-        for user in users:
-            if(name == user["name"]):
-                user["age"] = args["age"]
-                user["occupation"] = args["occupation"]
-                return user, 200
+#     def post(self, name):
+#         parser = reqparse.RequestParser()
+#         parser.add_argument("age")
+#         parser.add_argument("occupation")
+#         args = parser.parse_args()
+
+#         for user in users:
+#             if(name == user["name"]):
+#                 return "User with name {} already exists".format(name), 400
+
+#         user = {
+#             "name": name,
+#             "age": args["age"],
+#             "occupation": args["occupation"]
+#         }
+#         users.append(user)
+#         return user, 201
+
+#     def put(self, name):
+#         parser = reqparse.RequestParser()
+#         parser.add_argument("age")
+#         parser.add_argument("occupation")
+#         args = parser.parse_args()
+
+#         for user in users:
+#             if(name == user["name"]):
+#                 user["age"] = args["age"]
+#                 user["occupation"] = args["occupation"]
+#                 return user, 200
         
-        user = {
-            "name": name,
-            "age": args["age"],
-            "occupation": args["occupation"]
-        }
-        users.append(user)
-        return user, 201
+#         user = {
+#             "name": name,
+#             "age": args["age"],
+#             "occupation": args["occupation"]
+#         }
+#         users.append(user)
+#         return user, 201
 
-    def delete(self, name):
-        global users
-        users = [user for user in users if user["name"] != name]
-        return "{} is deleted.".format(name), 200
+#     def delete(self, name):
+#         global users
+#         users = [user for user in users if user["name"] != name]
+#         return "{} is deleted.".format(name), 200
       
-api.add_resource(User, "/user/<string:name>")
+
+
+      
+api.add_resource(Keyword, "/keyword/<string:name>")
 
 app.run(debug=True)
