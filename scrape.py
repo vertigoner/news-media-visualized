@@ -40,7 +40,11 @@ def read(keyword):
             finalDict[name] += 1
     print(finalDict)
     jsonObject = {"keyword": keyword, "publications": str(finalDict)}
-    return jsonObject
+    return jsonOsbject
 
-keyword = "Russia"
-read(keyword)
+# keyword = "Russia"
+keywords = ['Mueller', 'Election 2020', 'Indian Elections', 'Bernie Sanders', 'Trump',
+'Green New Deal', 'Biden', 'Cory Booker', 'Pete Buttigieg']
+for k in keywords:
+    read(k)
+#read(keyword)
