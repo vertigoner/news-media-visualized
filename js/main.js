@@ -8,18 +8,10 @@
 * Noah Roberts
 */
 
-const width = 700;
-const height = 700;
-const diameter = 250;
-const colorRamp = ['#5D2B7D','#A72D89','#1474BB','#8FC33E','#FEEE22','#E41E26'];
+const width = 600;
+const height = 500;
+const bubbleColor = "#428bca"
 const neutralColor = "lightgray";
-const selectedColors = ["#003f5c", "#58508d", "#bc5090", "#ff6361", "#ffa600"];
-const filterColor = "#58508d";
-const histColor = filterColor;
-const maxSelected = 5;
-const chart2BottomPadding = 50;
-const chart2LeftPadding = 100;
-const chart2TopPadding = 50;
 
 var selected = "";
 
@@ -32,39 +24,19 @@ window.onload = start;
 
 function start() {
 
-    var chart1 = d3.select("#bubblechart")
-                    .append("svg:svg")
-                    .attr("width", width)
-                    .attr("height", height);
+    var trendBubbleChart = d3.select("#trend-bubbles")
+        .append("svg:svg")
+        .attr("width", width)
+        .attr("height", height);
 
-    var chart2 = d3.select("#distribution")
-                    .append("svg:svg")
-                    .attr("width", width)
-                    .attr("height", height);
-
+    var sourceBubbleChart = d3.select("#source-bubbles")
+        .append("svg:svg")
+        .attr("width", width)
+        .attr("height", height);
 
     var radiusScale = d3.scale.linear()
-        .domain([1, 2600])
-        .range([1, 45]);
-
-    var colorScale = d3.scale.linear()
-        .domain([1, 2600])
-        .range([0, colorRamp.length]);
-    
-    var x = d3.scale.ordinal()
-        .rangeRoundBands([0, width - chart2LeftPadding], 0.3);
-    
-    var y = d3.scale.linear()
-        .domain([1, 2600])
-        .range([height - chart2BottomPadding - chart2TopPadding, 0]);
-
-    var xHist = d3.scale.linear()
-        .domain([0, 100])
-        .range([0, width - chart2LeftPadding - 10]);
-
-    var yHist = d3.scale.linear()
-        .range([height / 2 - chart2BottomPadding - 5, 0])
-        .domain([0, 215]);
+        .domain([1, 100])
+        .range([10, 45]);
 
     var searchButton = d3.select("#buttonWrapper")
         .append('button')
@@ -85,15 +57,7 @@ function start() {
             update();
         });
 
-    // create chart1 
-
-    var radiusScale = d3.scale.linear()
-        .domain([1, 100])
-        .range([10, 40]);
-
-    var colorScale = d3.scale.linear()
-        .domain([1, 30])
-        .range([0, colorRamp.length])
+    // create trendBubbleChart 
 
     getJSON('http://localhost:5000/getTrending',
     function(err, data) {
@@ -109,7 +73,7 @@ function start() {
 
         console.log(dataArray)
 
-        var nodes = chart1.selectAll(".node")
+        var nodes = trendBubbleChart.selectAll(".node")
             .data(dataArray)
             .enter()
     
@@ -120,7 +84,7 @@ function start() {
                 console.log(d)
                 return radiusScale(d.articleCount);
             })
-            .attr("fill", "#247ba0")
+            .attr("fill", bubbleColor)
         
         nodes.append("text")
             .text(function(d) { return d.keyword; });
@@ -130,14 +94,14 @@ function start() {
             .nodes(dataArray)
             .charge(-200)
             .on("tick", function() {
-                chart1.selectAll("circle")
+                trendBubbleChart.selectAll("circle")
                     .attr("cx", function(d) {
                         return d.x;
                     }) 
                     .attr("cy", function(d) {
                         return d.y;
                     });
-                chart1.selectAll("text")
+                trendBubbleChart.selectAll("text")
                     .attr("x", function(d) {
                         return d.x;
                     }) 
