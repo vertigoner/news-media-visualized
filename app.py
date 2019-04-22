@@ -27,9 +27,9 @@ def getSourceDistribution(key_word):
 	return jsonify(data)
 
 @app.route('/getTrending/', methods=['GET'])
-def getTrending(key_word):
+def getTrending():
 	data = getJSON("trendingTopics")
-	print(data)
+	# print(data)
 	newDict = {}
 	for item in data['body']:
 		newDict[item['keyword']] = int(item['count'])
