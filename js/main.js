@@ -11,6 +11,7 @@
 const width = 600;
 const height = 500;
 const bubbleColor = "#428bca"
+const filterColor = "#d30b0d"
 const neutralColor = "lightgray";
 
 var selected = "";
@@ -71,8 +72,6 @@ function start() {
             dataArray.push(new keywordEntry(key, data[key]))
         }
 
-        console.log(dataArray)
-
         var nodes = trendBubbleChart.selectAll(".node")
             .data(dataArray)
             .enter()
@@ -81,12 +80,13 @@ function start() {
             .attr("class", "node")
             .append("circle")
             .attr("r", function(d) {
-                console.log(d)
                 return radiusScale(d.articleCount);
             })
             .attr("fill", bubbleColor)
-        
-        nodes.append("text")
+            
+        trendBubbleChart.selectAll("g")
+            .append("text")
+            .attr("class", "unselectable")
             .text(function(d) { return d.keyword; });
 
         force = d3.layout.force() //set up force
@@ -106,13 +106,40 @@ function start() {
                         return d.x;
                     }) 
                     .attr("y", function(d) {
-                        return d.y;
+                        return d.y + 3;
                     });
             })
 
         force.start()
     });
+
+    trendBubbleChart.on("click", function() {
+        if (this === d3.event.target) {
+            trendBubbleChart.selectAll("circle").attr("fill", bubbleColor);
+            return;
+        }
+
+        trendBubbleChart.selectAll("circle").attr("fill", neutralColor);
+
+        var selectedBubble = d3.select(d3.event.target.parentNode);
+        var bubbleData = selectedBubble.data()[0];
+
+        selectedBubble.select("circle")
+            .attr("fill", filterColor);
+
+        getJSON(`http://localhost:5000/getSourceDistribution/${bubbleData.keyword}`, function(err, data) {
+            if (err !== null) {
+                alert('Something went wrong: ' + err);
+                return;
+            }
+            
+            for (let key of Object.keys(data.publications)) {
+                // console.log(key)
+            }
+        })
+    })
 }
+
 
 function getJSON(url, callback) {
     var xhr = new XMLHttpRequest();
