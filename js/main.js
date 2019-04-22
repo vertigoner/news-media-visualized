@@ -23,9 +23,15 @@ const chart2TopPadding = 50;
 
 var selected = "";
 
+var keywordEntry = function(keyword, articleCount) {
+    this.keyword = keyword
+    this.articleCount = articleCount
+}
+
 window.onload = start;
 
 function start() {
+
     var chart1 = d3.select("#bubblechart")
                     .append("svg:svg")
                     .attr("width", width)
@@ -77,105 +83,41 @@ function start() {
             });
             
             update();
-            
-
-
-            // d3.select("#filter")
-            //     .style("visibility", "visible");
-            // d3.select("#details")
-            //     .style("visibility", "hidden");
-            
-            // chart1.selectAll("circle").attr("fill", function(d) {
-            //     return colorRamp[Math.floor(colorScale(d.value.joy * 2 + d.value.meh))];
-            // });
-            // filterSelected = new CandyEntry(0,0,0);
-            // selected = [];
-            // chart3_gender.selectAll("g")
-            //     .data([])
-            //     .exit().remove();
-            // chart3_age.selectAll(".bar")
-            //     .data([])
-            //     .exit().remove();
-            // mode = "filter";
-
-            // chart3_gender.append("text")
-            //     .attr("class", "welcomeText")
-            //     .text("Please select a candy")
-            //     .attr("x", "50%")
-            //     .attr("y", "50%")
-            //     .style("font-size", "14px")
         });
-
-    // var compareButton = d3.select("#buttonWrapper") 
-    //     .append('button')
-    //     .text('Compare')
-    //     .attr('class', 'button card')
-    //     .on('click', function() {
-    //         d3.select("#details")
-    //             .style("visibility", "visible");
-    //         d3.select("#filter")
-    //             .style("visibility", "hidden");
-    //         chart1.selectAll("circle").attr("fill", function(d) {
-    //             return colorRamp[Math.floor(colorScale(d.value.joy * 2 + d.value.meh))];
-    //         });
-    //         selected = []; // clear array
-    //         filterSelected = new CandyEntry(0,0,0);
-    //         chart2.selectAll("rect").data([]).exit().remove();
-    //         mode = "compare";
-    //     });
-
-    // get data
-
-    // getAggregate(keyword)
-    data = [{
-        keyword: "Trump",
-        articleCount: 10
-    }]
 
     // create chart1 
 
     var radiusScale = d3.scale.linear()
-        .domain([1, 30])
-        .range([1, 40]);
+        .domain([1, 100])
+        .range([10, 40]);
 
     var colorScale = d3.scale.linear()
         .domain([1, 30])
         .range([0, colorRamp.length])
 
-    force = d3.layout.force() //set up force
-        .size([width, height])
-        .nodes(data)
-        .charge(-100)
-        .on("tick", tick)
+    getJSON('http://localhost:5000/getTrending',
+    function(err, data) {
+        if (err !== null) {
+            alert('Something went wrong: ' + err);
+            return;
+        }
 
-    function tick() {
-        chart1.selectAll("circle")
-            .attr("cx", function(d) {
-                return d.x;
-            }) 
-            .attr("cy", function(d) {
-                return d.y;
-            });
-        chart1.selectAll("text")
-            .attr("x", function(d) {
-                return d.x;
-            }) 
-            .attr("y", function(d) {
-                return d.y;
-            });
-    }
+        dataArray = []
+        for (let key of Object.keys(data)) {
+            dataArray.push(new keywordEntry(key, data[key]))
+        }
 
-    function update() {
+        console.log(dataArray)
 
         var nodes = chart1.selectAll(".node")
-            .data(data)
+            .data(dataArray)
             .enter()
-
+    
         nodes.append("g")
             .attr("class", "node")
             .append("circle")
-            .attr("class", "candy")
             .attr("r", function(d) {
+                console.log(d)
                 return radiusScale(d.articleCount);
             })
             .attr("fill", "#247ba0")
@@ -183,8 +125,42 @@ function start() {
         nodes.append("text")
             .text(function(d) { return d.keyword; });
 
+        force = d3.layout.force() //set up force
+            .size([width, height])
+            .nodes(dataArray)
+            .charge(-200)
+            .on("tick", function() {
+                chart1.selectAll("circle")
+                    .attr("cx", function(d) {
+                        return d.x;
+                    }) 
+                    .attr("cy", function(d) {
+                        return d.y;
+                    });
+                chart1.selectAll("text")
+                    .attr("x", function(d) {
+                        return d.x;
+                    }) 
+                    .attr("y", function(d) {
+                        return d.y;
+                    });
+            })
+
         force.start()
-    }
-        
-    update()
+    });
 }
+
+function getJSON(url, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'json';
+    xhr.onload = function() {
+      var status = xhr.status;
+      if (status === 200) {
+        callback(null, xhr.response);
+      } else {
+        callback(status, xhr.response);
+      }
+    };
+    xhr.send();
+};
