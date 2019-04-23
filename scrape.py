@@ -21,7 +21,7 @@ def read(keyword):
     newsapi = NewsApiClient(api_key='51f9df310d85434c9fbbca122bc636bd')
     everything = newsapi.get_everything(q= keyword,from_param='2019-03-25',
                                           to='2019-04-21',
-                                          language = 'en', page = 1, page_size = 100)
+                                          language = 'en', page = 1, page_size = 100, sort_by = "popularity")
     articles = everything["articles"]
     sources = []
     finalDict = {}
@@ -37,7 +37,7 @@ def read(keyword):
         count += 1
     jsonObject = {"keyword": keyword, "publications": str(finalDict)}
     # print(jsonObject)
-    return sources, jsonObject
+    return sources, jsonObject, count
 
 def addSourceDistributions():
     keywords = ["GOP", "White House", "Democrats", "Republicans"]
@@ -73,11 +73,15 @@ def addTopHeadlines():
         print(k + " added")
 
 def addRunners():
-    keywords = ['Cory Booker', 'Pete Buttigieg', 'Julian Castro', "John Delaney", "Tulsi Gabbard", "Kirsten Gillibrand", "Mike Gravel", "Kamala Harris", "John Hickenlooper", 'Jay Inslee', 'Amy Klobuchar', 'Wayne Messam', 'Beto O\'Rourke', 'Bernie Sanders', 'Eric Swalwell', 'Donald Trump', 'Elizabeth Warren', 'Bill Weld', 'Marianne Williamson', "Andrew Yang"]
+    keywords = ['Cory Booker', 'Pete Buttigieg', 'Julian Castro', "John Delaney", "Tulsi Gabbard", "Kirsten Gillibrand", "Kamala Harris", "John Hickenlooper", 'Jay Inslee', 'Amy Klobuchar', 'Wayne Messam', 'Beto O\'Rourke', 'Bernie Sanders', 'Eric Swalwell', 'Donald Trump', 'Elizabeth Warren', 'Bill Weld', 'Marianne Williamson', "Andrew Yang"]
+    # keywords = ["Mike Gravel"]
+    # keywords = [ "Kamala Harris", "John Hickenlooper", 'Jay Inslee', 'Amy Klobuchar', 'Wayne Messam', 'Beto O\'Rourke', 'Bernie Sanders', 'Eric Swalwell', 'Donald Trump', 'Elizabeth Warren', 'Bill Weld', 'Marianne Williamson', "Andrew Yang"]
     allSources = []
     for k in keywords:
-        sources, v = read(k)
-        db_util.insertJSON('candidateTable', v)
+        sources, v, count = read(k)
+        print(k, len(sources))
+        # db_util.insertJSON('candidateTable', v)
+
 
 def checkSources():
     keywords = ['Cory Booker', 'Pete Buttigieg', 'Julian Castro', "John Delaney", "Tulsi Gabbard", "Kirsten Gillibrand", "Mike Gravel", "Kamala Harris", "John Hickenlooper", 'Jay Inslee', 'Amy Klobuchar', 'Wayne Messam', 'Beto O\'Rourke', 'Bernie Sanders', 'Eric Swalwell', 'Donald Trump', 'Elizabeth Warren', 'Bill Weld', 'Marianne Williamson', "Andrew Yang"]
@@ -93,5 +97,5 @@ def checkSources():
 # addTopHeadlines()
 
 
-addSourceDistributions()
-# addRunners()
+# addSourceDistributions()
+addRunners()
