@@ -8,6 +8,8 @@
 * Noah Roberts
 */
 
+const host = "54.203.2.244";
+
 var vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 var vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 const width = vw / 2;
@@ -82,7 +84,7 @@ function start() {
         .attr('class', 'button card')
         .on('click', function() {
             let input = document.getElementById("query").value;
-            getJSON(`http://localhost:5000/getSourceDistribution/${input}`, function(err, data) {
+            getJSON(`http://${host}:5000/getSourceDistribution/${input}`, function(err, data) {
                 if (err !== null) {
                     alert('Something went wrong: ' + err);
                     return;
@@ -107,7 +109,7 @@ function start() {
 
     // create trendBubbleChart 
 
-    getJSON('http://localhost:5000/getTrending',
+    getJSON(`http://${host}:5000/getTrending`,
     function(err, data) {
         if (err !== null) {
             alert('Something went wrong: ' + err);
@@ -140,7 +142,7 @@ function start() {
         trendBubbleChart.selectAll("circle").attr("fill", neutralColor);
         selectedBubble.select("circle").attr("fill", filterColor);
 
-        getJSON(`http://localhost:5000/getSourceDistribution/${bubbleData.keyword}`, function(err, data) {
+        getJSON(`http://${host}:5000/getSourceDistribution/${bubbleData.keyword}`, function(err, data) {
             if (err !== null) {
                 alert('Something went wrong: ' + err);
                 return;
@@ -264,7 +266,7 @@ function start() {
         force.start()
     }
 
-    getJSON(`http://localhost:5000/getCandidateInfo`, function(err, data) {
+    getJSON(`http://${host}:5000/getCandidateInfo`, function(err, data) {
         if (err !== null) {
             alert('Something went wrong: ' + err);
             return;
