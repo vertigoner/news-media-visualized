@@ -35,5 +35,13 @@ def getTrending():
 		newDict[item['keyword']] = int(item['count'])
 	return jsonify(newDict)
 
+@app.route('/getCandidateInfo/', methods=['GET'])
+def getCandidateInfo():
+	data = getJSON("candidateTable")
+	newDict = {}
+	for item in data['body']:
+		newDict[item['keyword']] = item['publications']
+	return jsonify(newDict)
+
 if __name__ == '__main__':
 	app.run(debug=True)
