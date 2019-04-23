@@ -15,6 +15,7 @@ const height = 400;
 const bubbleColor = "#428bca"
 const filterColor = "#d30b0d"
 const neutralColor = "lightgray";
+const numSources = 15;
 
 var trends = []
 
@@ -47,14 +48,21 @@ function start() {
     };
 
     var barWidth = vw - barMargin.left - barMargin.right,
-        barHeight = 600 - barMargin.top - barMargin.bottom;
+        barHeight = 400 - barMargin.top - barMargin.bottom;
 
     var candidateBarChart = d3.select("#candidate-bars")
         .append("svg:svg")
         .attr("width", barWidth + barMargin.left + barMargin.right)
         .attr("height", barHeight + barMargin.top + barMargin.bottom)
-        .append("g")
+
+    var candidateGroup = candidateBarChart.append("g")
         .attr("transform", "translate(" + barMargin.left + "," + barMargin.top + ")");
+
+    var tooltip = d3.select("body").append("div")	
+        .attr("class", "tooltip card")				
+        .style("opacity", 0)
+    
+    tooltip.append("span").attr("class", "name");
 
     var radiusScale1 = d3.scale.linear()
         .domain([1, 100])
@@ -62,6 +70,10 @@ function start() {
 
     var radiusScale2 = d3.scale.linear()
         .domain([1, 20])
+        .range([20, 75]);
+
+    var radiusScale3 = d3.scale.linear()
+        .domain([1, 60])
         .range([20, 75]);
 
     var searchButton = d3.select("#buttonWrapper")
@@ -110,6 +122,8 @@ function start() {
     });
 
     trendBubbleChart.on("click", function() {
+
+        candidateBarChart.selectAll(".bar").attr("fill", bubbleColor);
         sourceBubbleChart.selectAll("g")
             .data([])
             .exit().remove();
@@ -236,27 +250,43 @@ function start() {
             return;
         }
 
-        data = Object.keys(data).map(function(key) {
-            let entry = {
-                name: key,
-                sourceDist: JSON.parse(data[key].replace(/'/g, `"`))
-            };
-            entry.articleCount = Object.values(entry.sourceDist).reduce(function(acc, a) {
-                return acc + a;
-            })
-            return entry;
+        let newData = {};
+        Object.keys(data).forEach(function(key1) {
+            let curr = JSON.parse(data[key1].replace(/'/g, `"`))
+
+            Object.keys(curr).forEach(function(key2) {
+                if (newData[key2] === undefined) {
+                    newData[key2] = {};
+                }
+                (newData[key2])[key1] = curr[key2];
+            });
         })
+
+        data = Object.keys(newData).map(function(key) {
+            return {
+                source: key,
+                articleCount: Object.values(newData[key]).reduce(function(acc, a) {
+                    return acc + a;
+                }),
+                candidateDist: newData[key]
+            }
+        });
+
+        data.sort(function(x, y){
+            return d3.ascending(x.articleCount, y.articleCount);
+        });
+        data = data.slice(data.length - numSources, data.length)        
 
         var barX = d3.scale.linear()
             .range([0, barWidth])
-            .domain([0, d3.max(data, function (d) {
+            .domain([0, d3.max(data, function(d) {
                 return d.articleCount;
             })]);
 
         var barY = d3.scale.ordinal()
             .rangeRoundBands([barHeight, 0], .1)
-            .domain(data.map(function (d) {
-                return d.name;
+            .domain(data.map(function(d) {
+                return d.source;
             }));
 
         var barYAxis = d3.svg.axis()
@@ -264,19 +294,20 @@ function start() {
             .tickSize(0)
             .orient("left");
 
-        var barGY = candidateBarChart.append("g")
+        var barGY = candidateGroup.append("g")
             .attr("class", "y axis")
             .call(barYAxis)
 
-        var bars = candidateBarChart.selectAll(".bar")
+        var bars = candidateGroup.selectAll(".bar")
             .data(data)
             .enter()
             .append("g")
 
         bars.append("rect")
             .attr("class", "bar")
+            .attr("fill", bubbleColor)
             .attr("y", function (d) {
-                return barY(d.name);
+                return barY(d.source);
             })
             .attr("height", barY.rangeBand())
             .attr("x", 0)
@@ -288,7 +319,7 @@ function start() {
             .attr("class", "label")
             //y position of the label is halfway down the bar
             .attr("y", function (d) {
-                return barY(d.name) + barY.rangeBand() / 2 + 4;
+                return barY(d.source) + barY.rangeBand() / 2 + 4;
             })
             //x position is 3 pixels to the right of the bar
             .attr("x", function (d) {
@@ -298,6 +329,74 @@ function start() {
                 return d.value;
             });
     });
+
+    var selectedBar = null;
+
+    candidateBarChart.on("click", function() {
+        trendBubbleChart.selectAll("circle").attr("fill", bubbleColor);
+        sourceBubbleChart.selectAll("g")
+            .data([])
+            .exit().remove();
+
+        if (this === d3.event.target) {
+            candidateBarChart.selectAll(".bar").attr("fill", bubbleColor);
+            selectedBar = null;
+            return;
+        }
+
+        selectedBar = d3.select(d3.event.target);
+        var barData = selectedBar.data()[0];
+
+        candidateBarChart.selectAll(".bar").attr("fill", neutralColor);
+        selectedBar.attr("fill", filterColor);
+
+        let data = Object.keys(barData.candidateDist).map(function(key) {
+            return {
+                name: key,
+                articleCount: barData.candidateDist[key]
+            }
+        });
+
+        var nodes = sourceBubbleChart.selectAll(".node")
+            .data(data)
+            .enter()
+    
+        nodes.append("g")
+            .attr("class", "node")
+            .append("circle")
+            .attr("r", function(d) {
+                return radiusScale3(d.articleCount);
+            })
+            .attr("fill", bubbleColor)
+            
+        sourceBubbleChart.selectAll("g")
+            .append("text")
+            .attr("class", "unselectable")
+            .text(function(d) { return d.name; });
+
+        force = d3.layout.force() //set up force
+            .size([width, height])
+            .nodes(data)
+            .charge(-200)
+            .on("tick", function() {
+                sourceBubbleChart.selectAll("circle")
+                    .attr("cx", function(d) {
+                        return d.x;
+                    }) 
+                    .attr("cy", function(d) {
+                        return d.y;
+                    });
+                sourceBubbleChart.selectAll("text")
+                    .attr("x", function(d) {
+                        return d.x;
+                    }) 
+                    .attr("y", function(d) {
+                        return d.y + 3;
+                    });
+            })
+
+        force.start();
+    })
 }
 
 function cleanSourceData(data) {

@@ -106,10 +106,6 @@ text {
     top: 150px;
 }
 
-.bar {
-    fill: #428bca;
-}
-
 .axis {
     font-size: 13px;
 }
@@ -122,4 +118,9 @@ text {
 
 .label {
     font-size: 13px;
+}
+
+circle {
+    stroke: #222222;
+    stroke-width: 0.15px;
 }
