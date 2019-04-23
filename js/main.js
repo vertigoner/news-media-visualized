@@ -8,16 +8,47 @@
 * Noah Roberts
 */
 
-const host = "54.203.2.244";
+const host = "localhost";
 
 var vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
 var vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
 const width = vw / 2;
 const height = 400;
-const bubbleColor = "#428bca"
-const filterColor = "#d30b0d"
-const neutralColor = "lightgray";
 const numSources = 15;
+const neutralColor = "lightgray";
+const filterColor = "#4056a1";
+const defaultColor = "#428bca";
+
+// political colors:
+const darkblue = "#3474aa";
+const blue = defaultColor;
+const lightblue = "#4ba2ea";
+const neutral = "#4056a1";
+const lightred = "#ef4345";
+const red = "#ea3335";
+const darkred = "#d30b0d";
+
+const sourceAffiliation = {
+    "The New York Times": blue,
+    "Business Insider": blue, 
+    "Yahoo.com": lightblue, 
+    "CNN": lightblue,
+    "Politico": blue,
+    "Huffpost.com": darkblue,
+    "Time": blue, 
+    "Independent": lightblue,
+    "ABC News": blue,
+    "Fivethirtyeight.com": lightblue,
+    "USA Today": neutral,
+    "Gizmodo.com": darkblue,
+    "Fox News": red,
+    "Mashable": darkblue,
+    "Reuters": neutral,
+    "The Wall Street Journal": neutral,
+    "Npr.org": neutral,
+    "Newyorker.com": darkblue,
+    "Youtube.com": neutral
+};
 
 var trends = []
 
@@ -71,12 +102,12 @@ function start() {
         .range([10, 45]);
 
     var radiusScale2 = d3.scale.linear()
-        .domain([1, 20])
-        .range([20, 75]);
+        .domain([1, 60])
+        .range([20, 60]);
 
     var radiusScale3 = d3.scale.linear()
         .domain([1, 60])
-        .range([20, 75]);
+        .range([20, 60]);
 
     var searchButton = d3.select("#buttonWrapper")
         .append('button')
@@ -125,13 +156,15 @@ function start() {
 
     trendBubbleChart.on("click", function() {
 
-        candidateBarChart.selectAll(".bar").attr("fill", bubbleColor);
+        candidateBarChart.selectAll(".bar").attr("fill", function(d) {
+            return sourceAffiliation[d.source] || neutral;
+        });
         sourceBubbleChart.selectAll("g")
             .data([])
             .exit().remove();
 
         if (this === d3.event.target) {
-            trendBubbleChart.selectAll("circle").attr("fill", bubbleColor);
+            trendBubbleChart.selectAll("circle").attr("fill", defaultColor);
             selectedBubble = null;
             return;
         }
@@ -176,7 +209,9 @@ function start() {
                 .attr("r", function(d) {
                     return radiusScale2(d.articleCount);
                 })
-                .attr("fill", bubbleColor)
+                .attr("fill", function(d) {
+                    return sourceAffiliation[d.source] || neutral;
+                });
                 
             sourceBubbleChart.selectAll("g")
                 .append("text")
@@ -231,7 +266,7 @@ function start() {
             })
             .attr("fill", function() {
                 if (selectedBubble == null) {
-                    return bubbleColor;
+                    return defaultColor;
                 } else {
                     return neutralColor;
                 }
@@ -327,7 +362,9 @@ function start() {
 
         bars.append("rect")
             .attr("class", "bar")
-            .attr("fill", bubbleColor)
+            .attr("fill", function(d) {
+                return sourceAffiliation[d.source] || neutral;
+            })
             .attr("y", function (d) {
                 return barY(d.source);
             })
@@ -355,13 +392,13 @@ function start() {
     var selectedBar = null;
 
     candidateBarChart.on("click", function() {
-        trendBubbleChart.selectAll("circle").attr("fill", bubbleColor);
+        trendBubbleChart.selectAll("circle").attr("fill", defaultColor);
         sourceBubbleChart.selectAll("g")
             .data([])
             .exit().remove();
 
         if (this === d3.event.target) {
-            candidateBarChart.selectAll(".bar").attr("fill", bubbleColor);
+            candidateBarChart.selectAll(".bar").attr("fill", defaultColor);
             selectedBar = null;
             return;
         }
@@ -399,7 +436,7 @@ function start() {
             .attr("r", function(d) {
                 return radiusScale3(d.articleCount);
             })
-            .attr("fill", bubbleColor)
+            .attr("fill", defaultColor)
             
         sourceBubbleChart.selectAll("g")
             .append("text")
