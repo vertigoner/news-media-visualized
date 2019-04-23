@@ -2,7 +2,7 @@
     font-family: 'Playfair Display', serif;
     text-align: center;
     width: 900px;
-    margin: 30px auto;
+    margin: 15px auto;
 }
 
 input[type=text] {
@@ -104,4 +104,22 @@ text {
     visibility: hidden;
     left: 705px;
     top: 150px;
+}
+
+.bar {
+    fill: #428bca;
+}
+
+.axis {
+    font-size: 13px;
+}
+
+.axis path,
+.axis line {
+    fill: none;
+    display: none;
+}
+
+.label {
+    font-size: 13px;
 }

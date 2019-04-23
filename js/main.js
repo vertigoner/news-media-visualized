@@ -8,8 +8,10 @@
 * Noah Roberts
 */
 
-const width = 600;
-const height = 500;
+var vw = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+var vh = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+const width = vw / 2;
+const height = 400;
 const bubbleColor = "#428bca"
 const filterColor = "#d30b0d"
 const neutralColor = "lightgray";
@@ -36,6 +38,23 @@ function start() {
         .append("svg:svg")
         .attr("width", width)
         .attr("height", height);
+
+    var barMargin = {
+        top: 0,
+        right: vw / 4,
+        bottom: 15,
+        left: vw / 4
+    };
+
+    var barWidth = vw - barMargin.left - barMargin.right,
+        barHeight = 600 - barMargin.top - barMargin.bottom;
+
+    var candidateBarChart = d3.select("#candidate-bars")
+        .append("svg:svg")
+        .attr("width", barWidth + barMargin.left + barMargin.right)
+        .attr("height", barHeight + barMargin.top + barMargin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + barMargin.left + "," + barMargin.top + ")");
 
     var radiusScale1 = d3.scale.linear()
         .domain([1, 100])
@@ -175,7 +194,6 @@ function start() {
                 return radiusScale1(d.articleCount);
             })
             .attr("fill", function() {
-                console.log(selectedBubble)
                 if (selectedBubble == null) {
                     return bubbleColor;
                 } else {
@@ -211,6 +229,75 @@ function start() {
     
         force.start()
     }
+
+    getJSON(`http://localhost:5000/getCandidateInfo`, function(err, data) {
+        if (err !== null) {
+            alert('Something went wrong: ' + err);
+            return;
+        }
+
+        data = Object.keys(data).map(function(key) {
+            let entry = {
+                name: key,
+                sourceDist: JSON.parse(data[key].replace(/'/g, `"`))
+            };
+            entry.articleCount = Object.values(entry.sourceDist).reduce(function(acc, a) {
+                return acc + a;
+            })
+            return entry;
+        })
+
+        var barX = d3.scale.linear()
+            .range([0, barWidth])
+            .domain([0, d3.max(data, function (d) {
+                return d.articleCount;
+            })]);
+
+        var barY = d3.scale.ordinal()
+            .rangeRoundBands([barHeight, 0], .1)
+            .domain(data.map(function (d) {
+                return d.name;
+            }));
+
+        var barYAxis = d3.svg.axis()
+            .scale(barY)
+            .tickSize(0)
+            .orient("left");
+
+        var barGY = candidateBarChart.append("g")
+            .attr("class", "y axis")
+            .call(barYAxis)
+
+        var bars = candidateBarChart.selectAll(".bar")
+            .data(data)
+            .enter()
+            .append("g")
+
+        bars.append("rect")
+            .attr("class", "bar")
+            .attr("y", function (d) {
+                return barY(d.name);
+            })
+            .attr("height", barY.rangeBand())
+            .attr("x", 0)
+            .attr("width", function (d) {
+                return barX(d.articleCount);
+            });
+
+        bars.append("text")
+            .attr("class", "label")
+            //y position of the label is halfway down the bar
+            .attr("y", function (d) {
+                return barY(d.name) + barY.rangeBand() / 2 + 4;
+            })
+            //x position is 3 pixels to the right of the bar
+            .attr("x", function (d) {
+                return barX(d.value) + 3;
+            })
+            .text(function (d) {
+                return d.value;
+            });
+    });
 }
 
 function cleanSourceData(data) {
