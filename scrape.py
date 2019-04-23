@@ -40,10 +40,11 @@ def read(keyword):
     return sources, jsonObject
 
 def addSourceDistributions():
-    keywords = ['Mueller', 'Election 2020', 'Indian Elections', 'Bernie Sanders', 'Trump',
-    'Green New Deal', 'Biden', 'Cory Booker', 'Pete Buttigieg', 'Donald Trump', 'Russia', 'Sri Lanka', 'Notre Dame']
+    keywords = ["GOP", "White House", "Democrats", "Republicans"]
+    # keywords = ['Mueller', 'Election 2020', 'Indian Elections', 'Bernie Sanders', 'Trump',
+    # 'Green New Deal', 'Biden', 'Cory Booker', 'Pete Buttigieg', 'Donald Trump', 'Russia', 'Sri Lanka', 'Notre Dame', 'Venezuela']
     for k in keywords:
-        v = read(k)
+        sources, v = read(k)
         db_util.insertJSON('sourceDistribution', v)
 
 def top(keyword):
@@ -63,8 +64,9 @@ def top(keyword):
     return jsonObject
 
 def addTopHeadlines():
-    keywords = ['Mueller', 'Election 2020', 'Indian Elections', 'Bernie Sanders', 'Trump',
-    'Green New Deal', 'Biden', 'Cory Booker', 'Pete Buttigieg', 'Donald Trump', 'Russia', 'Sri Lanka', 'Notre Dame', 'Brexit', 'Easter', 'Conway', 'Wall']
+
+    # keywords = ['Mueller', 'Election 2020', 'Indian Elections', 'Bernie Sanders', 'Trump',
+    # 'Green New Deal', 'Biden', 'Cory Booker', 'Pete Buttigieg', 'Donald Trump', 'Russia', 'Sri Lanka', 'Notre Dame', 'Brexit', 'Easter', 'Conway', 'Wall']
     for k in keywords:
         random, v = top(k)
         db_util.insertJSON('trendingTopics', v)
@@ -89,5 +91,7 @@ def checkSources():
     print(allSources)
     print("Size: ", len(allSources))
 # addTopHeadlines()
-# addSourceDistributions()
+
+
+addSourceDistributions()
 # addRunners()
