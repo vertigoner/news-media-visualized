@@ -27,7 +27,11 @@ def getSourceDistribution(key_word):
 		table.put_item(
 			Item={
 				'keyword': key_word,
+<<<<<<< HEAD
 				'publications': str(data['publications'])
+=======
+				'publications': str(data)
+>>>>>>> bf070c8a9c6075624196e9c03772e62d51813173
 			})
 	
 	return jsonify(data)
