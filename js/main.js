@@ -160,6 +160,16 @@ function start() {
     
             nodes.append("g")
                 .attr("class", "node")
+                .on("mouseover", function() {
+                    return tooltip.style("visibility", "visible")
+                        .text("Total Articles: " + 10);
+                })
+                .on("mousemove", function() {
+                    return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");
+                })
+                .on("mouseout", function() {
+                    return tooltip.style("visibility", "hidden");
+                })
                 .append("circle")
                 .attr("r", function(d) {
                     return radiusScale2(d.articleCount);
@@ -203,6 +213,16 @@ function start() {
     
         nodes.append("g")
             .attr("class", "node")
+            .on("mouseover", function() {
+                return tooltip.style("visibility", "visible")
+                    .text("Total Articles: " + d3.event.target.__data__.articleCount);
+            })
+            .on("mousemove", function() {
+                return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");
+            })
+            .on("mouseout", function() {
+                return tooltip.style("visibility", "hidden");
+            })
             .append("circle")
             .attr("r", function(d) {
                 return radiusScale1(d.articleCount);
@@ -213,7 +233,7 @@ function start() {
                 } else {
                     return neutralColor;
                 }
-            })
+            });
             
         trendBubbleChart.selectAll("g")
             .append("text")
@@ -363,6 +383,16 @@ function start() {
     
         nodes.append("g")
             .attr("class", "node")
+            .on("mouseover", function() {
+                return tooltip.style("visibility", "visible")
+                    .text("Total Articles: " + d3.event.target.__data__.articleCount);
+            })
+            .on("mousemove", function() {
+                return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");
+            })
+            .on("mouseout", function() {
+                return tooltip.style("visibility", "hidden");
+            })
             .append("circle")
             .attr("r", function(d) {
                 return radiusScale3(d.articleCount);
@@ -377,7 +407,7 @@ function start() {
         force = d3.layout.force() //set up force
             .size([width, height])
             .nodes(data)
-            .charge(-200)
+            .charge(-300)
             .on("tick", function() {
                 sourceBubbleChart.selectAll("circle")
                     .attr("cx", function(d) {
@@ -397,6 +427,27 @@ function start() {
 
         force.start();
     })
+
+    var tooltip = d3.select("body")
+        .append("div")
+        .style("font-family", "'Roboto', sans-serif")
+        .style("font-size", "13px")
+        .style("position", "absolute")
+        .style("z-index", "10")
+        .style("visibility", "hidden")
+        .text("a simple tooltip");
+
+    candidateBarChart.selectAll("g")
+        .on("mouseover", function() {
+            return tooltip.style("visibility", "visible")
+                .text("Total Articles: " + d3.event.target.__data__.articleCount);
+        })
+	    .on("mousemove", function() {
+            return tooltip.style("top", (event.pageY-10)+"px").style("left",(event.pageX+10)+"px");
+        })
+	    .on("mouseout", function() {
+            return tooltip.style("visibility", "hidden");
+        });
 }
 
 function cleanSourceData(data) {
